@@ -1,45 +1,27 @@
 const express = require("express");
-
 const router = express.Router();
 
+const {
+  getAllSubjects,
+  getSubjectById,
+  createSubject,
+  updateSubject,
+  deleteSubject,
+} = require("../controllers/subject.controller");
+
 // Get all subjects
-router.get("/", (req, res) => {
-    res.json({
-        success: true,
-        message: "Get all subjects API is working"
-    });
-});
+router.get("/", getAllSubjects);
 
 // Get subject by ID
-router.get("/:id", (req, res) => {
-    res.json({
-        success: true,
-        message: `Get subject with ID ${req.params.id}`
-    });
-});
+router.get("/:id", getSubjectById);
 
-// Create a new subject
-router.post("/", (req, res) => {
-    res.json({
-        success: true,
-        message: "Create subject API is working"
-    });
-});
+// Create subject
+router.post("/", createSubject);
 
 // Update subject
-router.put("/:id", (req, res) => {
-    res.json({
-        success: true,
-        message: `Update subject with ID ${req.params.id}`
-    });
-});
+router.put("/:id", updateSubject);
 
 // Delete subject
-router.delete("/:id", (req, res) => {
-    res.json({
-        success: true,
-        message: `Delete subject with ID ${req.params.id}`
-    });
-});
+router.delete("/:id", deleteSubject);
 
 module.exports = router;

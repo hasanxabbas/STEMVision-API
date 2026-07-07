@@ -7,13 +7,13 @@ const jwt = require("jsonwebtoken");
 // ====================
 const signup = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { name, email, password } = req.body;
 
     // Validate input
-    if (!username || !email || !password) {
+    if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Username, email and password are required",
+        message: "Name, email and password are required",
       });
     }
 
@@ -27,15 +27,13 @@ const signup = async (req, res) => {
       });
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create new user
     const newUser = await User.create({
-      username,
-      email,
-      password: hashedPassword,
-    });
+  name,
+  email,
+  password,
+});
 
     return res.status(201).json({
       success: true,
@@ -69,7 +67,7 @@ const login = async (req, res) => {
     }
 
     // Find user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
       return res.status(404).json({
