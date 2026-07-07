@@ -1,45 +1,27 @@
 const express = require("express");
-
 const router = express.Router();
 
-// Get all students
-router.get("/", (req, res) => {
-    res.json({
-        success: true,
-        message: "Get all students API is working"
-    });
-});
+const {
+  getAllStudents,
+  getStudentById,
+  createStudent,
+  updateStudent,
+  deleteStudent,
+} = require("../controllers/student.controller");
 
-// Get student by ID
-router.get("/:id", (req, res) => {
-    res.json({
-        success: true,
-        message: `Get student with ID ${req.params.id}`
-    });
-});
+// Get all study progress
+router.get("/", getAllStudents);
 
-// Create a new student
-router.post("/", (req, res) => {
-    res.json({
-        success: true,
-        message: "Create student API is working"
-    });
-});
+// Get study progress by ID
+router.get("/:id", getStudentById);
 
-// Update student
-router.put("/:id", (req, res) => {
-    res.json({
-        success: true,
-        message: `Update student with ID ${req.params.id}`
-    });
-});
+// Create study progress
+router.post("/", createStudent);
 
-// Delete student
-router.delete("/:id", (req, res) => {
-    res.json({
-        success: true,
-        message: `Delete student with ID ${req.params.id}`
-    });
-});
+// Update study progress
+router.put("/:id", updateStudent);
+
+// Delete study progress
+router.delete("/:id", deleteStudent);
 
 module.exports = router;

@@ -1,45 +1,27 @@
 const express = require("express");
-
 const router = express.Router();
 
+const {
+  getAllQuizzes,
+  getQuizById,
+  createQuiz,
+  updateQuiz,
+  deleteQuiz,
+} = require("../controllers/quiz.controller");
+
 // Get all quizzes
-router.get("/", (req, res) => {
-    res.json({
-        success: true,
-        message: "Get all quizzes API is working"
-    });
-});
+router.get("/", getAllQuizzes);
 
 // Get quiz by ID
-router.get("/:id", (req, res) => {
-    res.json({
-        success: true,
-        message: `Get quiz with ID ${req.params.id}`
-    });
-});
+router.get("/:id", getQuizById);
 
-// Create a new quiz
-router.post("/", (req, res) => {
-    res.json({
-        success: true,
-        message: "Create quiz API is working"
-    });
-});
+// Create quiz
+router.post("/", createQuiz);
 
 // Update quiz
-router.put("/:id", (req, res) => {
-    res.json({
-        success: true,
-        message: `Update quiz with ID ${req.params.id}`
-    });
-});
+router.put("/:id", updateQuiz);
 
 // Delete quiz
-router.delete("/:id", (req, res) => {
-    res.json({
-        success: true,
-        message: `Delete quiz with ID ${req.params.id}`
-    });
-});
+router.delete("/:id", deleteQuiz);
 
 module.exports = router;
