@@ -7,8 +7,7 @@ const jwt = require("jsonwebtoken");
 // ====================
 const signup = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-
+    const { name, email, password, role } = req.body;
     // Validate input
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -33,7 +32,9 @@ const signup = async (req, res) => {
   name,
   email,
   password,
+  role: role || "Student",
 });
+
 
     return res.status(201).json({
       success: true,
