@@ -1,37 +1,33 @@
-const express = require("express");
+const express = require('express');
+const multer = require('multer');
+const {
+  tutorController,
+  visionController,
+  quizController,
+  speechController,
+} = require('../controllers/ai.controller');
 
 const router = express.Router();
 
-// AI Vision - Explain diagrams/images
-router.post("/vision", (req, res) => {
-    res.json({
-        success: true,
-        message: "AI Vision API is working"
-    });
+// Configure memory storage for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 4 * 1024 * 1024, // 4MB limit
+  },
 });
 
-// AI Tutor - Answer student questions
-router.post("/tutor", (req, res) => {
-    res.json({
-        success: true,
-        message: "AI Tutor API is working"
-    });
-});
+// AI Tutor - Chat concept assistant
+router.post('/tutor', tutorController);
+
+// AI Vision - Explain diagrams/images (expects multipart/form-data with "image" file)
+router.post('/vision', upload.single('image'), visionController);
 
 // AI Quiz Generator
-router.post("/quiz", (req, res) => {
-    res.json({
-        success: true,
-        message: "AI Quiz Generator API is working"
-    });
-});
+router.post('/quiz', quizController);
 
-// AI Text-to-Speech
-router.post("/speech", (req, res) => {
-    res.json({
-        success: true,
-        message: "AI Text-to-Speech API is working"
-    });
-});
+// AI Text-to-Speech placeholder
+router.post('/speech', speechController);
 
 module.exports = router;
