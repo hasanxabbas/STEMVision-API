@@ -18,6 +18,33 @@ const getAllLessons = async (req, res) => {
   }
 };
 
+// Get latest lesson
+const getLatestLesson = async (req, res) => {
+  try {
+    const lesson = await Lesson.findOne()
+      .sort({ createdAt: -1 })
+      .populate("subject", "name")
+      .populate("teacher", "name");
+
+    if (!lesson) {
+      return res.status(404).json({
+        success: false,
+        message: "No lessons found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: lesson,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // Get lesson by ID
 const getLessonById = async (req, res) => {
   try {
@@ -115,6 +142,7 @@ const deleteLesson = async (req, res) => {
 
 module.exports = {
   getAllLessons,
+  getLatestLesson,
   getLessonById,
   createLesson,
   updateLesson,

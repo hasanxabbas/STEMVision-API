@@ -5,6 +5,7 @@ const upload = require("../config/multer");
 
 const {
     getAllLessons,
+    getLatestLesson,
     getLessonById,
     createLesson,
     updateLesson,
@@ -36,6 +37,8 @@ router.post("/upload", upload.single("file"), (req, res) => {
         });
     }
 });
+
+router.get("/latest", getLatestLesson);
 
 // Get lesson by ID
 router.get("/:id", getLessonById);
