@@ -3,7 +3,15 @@ const Lesson = require("../models/Lesson");
 // Get all lessons
 const getAllLessons = async (req, res) => {
   try {
-    const lessons = await Lesson.find();
+    let query = {};
+
+    if (req.query.subjectId) {
+      query.subject = req.query.subjectId;
+    }
+
+    const lessons = await Lesson.find(query)
+      .populate("subject", "name")
+      .populate("teacher", "name");
 
     res.status(200).json({
       success: true,
@@ -70,9 +78,26 @@ const getLessonById = async (req, res) => {
 };
 
 // Create lesson
+// Create lesson
+
 const createLesson = async (req, res) => {
   try {
-    const lesson = await Lesson.create(req.body);
+    const {
+      title,
+      description,
+      subject,
+      difficulty,
+      fileUrl,
+    } = req.body;
+console.log("REQ.USER =", req.user);
+    const lesson = await Lesson.create({
+      title,
+      description,
+      subject,
+      difficulty,
+      fileUrl,
+      teacher: req.user.id,
+    });
 
     res.status(201).json({
       success: true,
@@ -80,11 +105,14 @@ const createLesson = async (req, res) => {
       data: lesson,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
+  console.error("CREATE LESSON ERROR:");
+  console.error(error);
+
+  res.status(500).json({
+    success: false,
+    message: error.message,
+  });
+}
 };
 
 // Update lesson
