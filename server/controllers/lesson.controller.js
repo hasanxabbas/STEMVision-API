@@ -1,12 +1,29 @@
 const Lesson = require("../models/Lesson");
 
-// Get all lessons
+// Get all lessons (Filtered by student's branch)
 const getAllLessons = async (req, res) => {
   try {
     let query = {};
 
     if (req.query.subjectId) {
       query.subject = req.query.subjectId;
+    }
+
+    // Branch filtering for students or if explicit branch is passed
+    const userRole = req.user?.role?.toLowerCase();
+    const userBranch = req.user?.branch;
+    const requestedBranch = req.query.branch || userBranch;
+
+    if (userRole === "student" && requestedBranch) {
+      query.$or = [
+        { branch: requestedBranch },
+        { branch: "General" },
+        { branch: "All Branches" },
+        { branch: "" },
+        { branch: { $exists: false } },
+      ];
+    } else if (req.query.branch) {
+      query.branch = req.query.branch;
     }
 
     const lessons = await Lesson.find(query)
@@ -26,10 +43,24 @@ const getAllLessons = async (req, res) => {
   }
 };
 
-// Get latest lesson
+// Get latest lesson (Filtered by student's branch)
 const getLatestLesson = async (req, res) => {
   try {
-    const lesson = await Lesson.findOne()
+    let query = {};
+    const userRole = req.user?.role?.toLowerCase();
+    const userBranch = req.user?.branch;
+
+    if (userRole === "student" && userBranch) {
+      query.$or = [
+        { branch: userBranch },
+        { branch: "General" },
+        { branch: "All Branches" },
+        { branch: "" },
+        { branch: { $exists: false } },
+      ];
+    }
+
+    const lesson = await Lesson.findOne(query)
       .sort({ createdAt: -1 })
       .populate("subject", "name")
       .populate("teacher", "name");
@@ -78,8 +109,6 @@ const getLessonById = async (req, res) => {
 };
 
 // Create lesson
-// Create lesson
-
 const createLesson = async (req, res) => {
   try {
     const {
@@ -87,15 +116,26 @@ const createLesson = async (req, res) => {
       description,
       subject,
       difficulty,
+      branch,
       fileUrl,
+      lessonContent,
     } = req.body;
-console.log("REQ.USER =", req.user);
+
+    // Map frontend difficulty to schema values
+    const difficultyMap = {
+      beginner: "Easy",
+      intermediate: "Medium",
+      advanced: "Hard",
+    };
+
     const lesson = await Lesson.create({
       title,
       description,
       subject,
-      difficulty,
+      aiDifficulty: difficultyMap[difficulty] || "Medium",
+      branch: branch || req.user?.branch || "General",
       fileUrl,
+      lessonContent: lessonContent || "",
       teacher: req.user.id,
     });
 
@@ -105,14 +145,13 @@ console.log("REQ.USER =", req.user);
       data: lesson,
     });
   } catch (error) {
-  console.error("CREATE LESSON ERROR:");
-  console.error(error);
+    console.error("CREATE LESSON ERROR:", error);
 
-  res.status(500).json({
-    success: false,
-    message: error.message,
-  });
-}
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };
 
 // Update lesson

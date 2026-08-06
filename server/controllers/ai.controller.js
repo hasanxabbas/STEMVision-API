@@ -10,26 +10,61 @@ const Lesson = require('../models/Lesson');
  */
 async function tutorController(req, res) {
   try {
-    const { message, lessonContext } = req.body;
+    const { message, lessonId, lessonContext } = req.body;
+
+    console.log("\n========== AI TUTOR ==========");
+    console.log("Lesson ID:", lessonId);
+    console.log("Question:", message);
 
     if (!message) {
       return res.status(400).json({
         success: false,
-        message: 'Message parameter is required.',
+        message: "Message parameter is required.",
       });
     }
 
-    const answer = await getTutorResponse(message, lessonContext);
+    let context = lessonContext || "";
+
+    // Automatically load lesson content from MongoDB
+    if (lessonId) {
+      try {
+        const lesson = await Lesson.findById(lessonId);
+
+        console.log("Lesson found:", !!lesson);
+
+        if (lesson) {
+          console.log("Lesson title:", lesson.title);
+          console.log(
+            "Lesson content length:",
+            lesson.lessonContent?.length || 0
+          );
+        }
+
+        if (lesson && lesson.lessonContent) {
+          context = lesson.lessonContent;
+        }
+      } catch (dbError) {
+        console.warn(
+          "Could not load lesson content:",
+          dbError.message
+        );
+      }
+    }
+
+    console.log("Context length sent to AI:", context.length);
+
+    const answer = await getTutorResponse(message, context);
 
     return res.status(200).json({
       success: true,
       answer,
     });
   } catch (error) {
-    console.error('Error in tutorController:', error);
+    console.error("Error in tutorController:", error);
+
     return res.status(500).json({
       success: false,
-      message: 'Failed to retrieve AI Tutor response.',
+      message: "Failed to retrieve AI Tutor response.",
       error: error.message,
     });
   }
@@ -47,24 +82,32 @@ async function visionController(req, res) {
     if (!file) {
       return res.status(400).json({
         success: false,
-        message: 'No image file uploaded. Please upload a file using the "image" field.',
+        message:
+          'No image file uploaded. Please upload a file using the "image" field.',
       });
     }
 
     const base64Image = file.buffer.toString('base64');
-    const analysisResult = await analyzeVision(base64Image, file.mimetype, context);
+    const analysisResult = await analyzeVision(
+      base64Image,
+      file.mimetype,
+      context
+    );
 
-    // Save to AnalysisHistory database log
     try {
       const historyEntry = new AnalysisHistory({
-        category: 'diagram', // Default general category
+        category: 'diagram',
         analysisResult,
         fileUrl: file.originalname,
         lessonId: lessonId || undefined,
       });
+
       await historyEntry.save();
     } catch (dbError) {
-      console.warn('Database save warning (MongoDB connection might be uninitialized):', dbError.message);
+      console.warn(
+        'Database save warning (MongoDB connection might be uninitialized):',
+        dbError.message
+      );
     }
 
     return res.status(200).json({
@@ -74,6 +117,7 @@ async function visionController(req, res) {
     });
   } catch (error) {
     console.error('Error in visionController:', error);
+
     return res.status(500).json({
       success: false,
       message: 'Failed to complete AI Vision analysis.',
@@ -93,20 +137,27 @@ async function quizController(req, res) {
     let lessonTitle = 'General STEM Study Guide';
     let lessonDescription = 'Self-study questionnaire';
 
-    // Retrieve lesson info from DB if it exists
     if (lessonId) {
       try {
         const lesson = await Lesson.findById(lessonId);
+
         if (lesson) {
           lessonTitle = lesson.title;
           lessonDescription = lesson.description || lesson.title;
         }
       } catch (dbError) {
-        console.warn('Could not query Lesson collection from DB, using defaults:', dbError.message);
+        console.warn(
+          'Could not query Lesson collection from DB, using defaults:',
+          dbError.message
+        );
       }
     }
 
-    const quizResult = await generateQuiz(lessonTitle, lessonDescription, numberOfQuestions || 5);
+    const quizResult = await generateQuiz(
+      lessonTitle,
+      lessonDescription,
+      numberOfQuestions || 5
+    );
 
     return res.status(200).json({
       success: true,
@@ -114,6 +165,7 @@ async function quizController(req, res) {
     });
   } catch (error) {
     console.error('Error in quizController:', error);
+
     return res.status(500).json({
       success: false,
       message: 'Failed to generate quiz.',
@@ -130,10 +182,12 @@ async function speechController(req, res) {
   try {
     return res.status(200).json({
       success: true,
-      message: 'AI Text-to-Speech API placeholder is working. Note: Client uses Web Speech API.',
+      message:
+        'AI Text-to-Speech API placeholder is working. Note: Client uses Web Speech API.',
     });
   } catch (error) {
     console.error('Error in speechController:', error);
+
     return res.status(500).json({
       success: false,
       message: 'Failed to process speech endpoint.',

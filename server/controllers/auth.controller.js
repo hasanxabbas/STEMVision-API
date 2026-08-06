@@ -7,7 +7,7 @@ const jwt = require("jsonwebtoken");
 // ====================
 const signup = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, branch } = req.body;
     // Validate input
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -26,19 +26,33 @@ const signup = async (req, res) => {
       });
     }
 
-
     // Create new user
     const newUser = await User.create({
-  name,
-  email,
-  password,
-  role: role || "Student",
-});
+      name,
+      email,
+      password,
+      role: role || "Student",
+      branch: branch || "Computer Science",
+    });
 
+    // Generate JWT Token
+    const token = jwt.sign(
+      {
+        id: newUser._id,
+        email: newUser.email,
+        role: newUser.role,
+        branch: newUser.branch,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     return res.status(201).json({
       success: true,
       message: "Account created successfully",
+      token,
       user: newUser,
     });
 
@@ -92,6 +106,8 @@ const login = async (req, res) => {
       {
         id: user._id,
         email: user.email,
+        role: user.role,
+        branch: user.branch,
       },
       process.env.JWT_SECRET,
       {

@@ -24,10 +24,19 @@ const lessonSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    branch: {
+      type: String,
+      default: "General",
+      trim: true,
+    },
     fileUrl: {
       type: String,
       default: "",
     },
+    lessonContent: {
+  type: String,
+  default: "",
+},
     aiProcessed: {
     type: Boolean,
     default: false,

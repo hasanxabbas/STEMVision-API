@@ -33,6 +33,12 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
+    branch: {
+      type: String,
+      default: "Computer Science",
+      trim: true,
+    },
+
     profileImage: {
       type: String,
       default: "",
