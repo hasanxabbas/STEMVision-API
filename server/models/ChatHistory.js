@@ -1,42 +1,49 @@
 const mongoose = require("mongoose");
 
-const notificationSchema = new mongoose.Schema(
+const chatHistorySchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-
+    lesson: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Lesson",
+      required: false,
+    },
     title: {
       type: String,
       required: true,
-      trim: true,
-      maxlength: 100,
     },
-
-    message: {
+    messages: [
+      {
+        sender: {
+          type: String,
+          enum: ["user", "ai"],
+          required: true,
+        },
+        text: {
+          type: String,
+          required: true,
+        },
+        image: {
+          type: String, // Stored as image URL/path (e.g. /uploads/12345.png)
+          required: false,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    lastMessage: {
       type: String,
-      required: true,
-      trim: true,
-      maxlength: 500,
+      required: false,
     },
-
-    type: {
-      type: String,
-      enum: [
-        "lesson",
-        "quiz",
-        "ai",
-        "system",
-        "reminder",
-      ],
-      default: "system",
-    },
-
-    isRead: {
-      type: Boolean,
-      default: false,
+    lastActivity: {
+      type: Date,
+      default: Date.now,
     },
   },
   {
@@ -44,4 +51,4 @@ const notificationSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("Notification", notificationSchema);
+module.exports = mongoose.model("ChatHistory", chatHistorySchema);

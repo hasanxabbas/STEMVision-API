@@ -6,7 +6,7 @@ const { groq, gemini, provider } = require('./config');
  * @param {string|null} lessonContext - Optional text context from the lesson document.
  * @returns {Promise<string>} - The AI tutor's text response.
  */
-async function getTutorResponse(message, lessonContext) {
+async function getTutorResponse(message, lessonContext, historyMessages = []) {
   if (!message) {
     throw new Error('Message is required.');
   }
@@ -53,7 +53,14 @@ Use this lesson context whenever it is relevant to answer the student's question
         systemInstruction,
       });
 
-      const result = await model.generateContent(message);
+      // Map history messages into Gemini chat history format
+      const formattedHistory = historyMessages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }]
+      }));
+
+      const chat = model.startChat({ history: formattedHistory });
+      const result = await chat.sendMessage(message);
 
       return result.response.text();
     } catch (error) {
@@ -62,18 +69,24 @@ Use this lesson context whenever it is relevant to answer the student's question
     }
   } else {
     try {
+      const messagesArray = [
+        {
+          role: 'system',
+          content: systemInstruction,
+        },
+        ...historyMessages.map(msg => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.text,
+        })),
+        {
+          role: 'user',
+          content: message,
+        },
+      ];
+
       const response = await groq.chat.completions.create({
         model: 'llama-3.3-70b-versatile',
-        messages: [
-          {
-            role: 'system',
-            content: systemInstruction,
-          },
-          {
-            role: 'user',
-            content: message,
-          },
-        ],
+        messages: messagesArray,
         temperature: 0.5,
         max_tokens: 1500,
       });

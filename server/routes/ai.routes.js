@@ -1,28 +1,26 @@
 const express = require('express');
-const multer = require('multer');
+const upload = require('../config/multer');
+const verifyToken = require('../middleware/auth.middleware');
 const {
   tutorController,
   visionController,
   quizController,
   speechController,
+  getChatSessions,
+  getChatSessionById,
 } = require('../controllers/ai.controller');
 
 const router = express.Router();
 
-// Configure memory storage for file uploads
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 4 * 1024 * 1024, // 4MB limit
-  },
-});
+// AI Tutor - Chat concept assistant (Authenticated)
+router.post('/tutor', verifyToken, tutorController);
 
-// AI Tutor - Chat concept assistant
-router.post('/tutor', tutorController);
+// AI Vision - Explain diagrams/images (Authenticated, expects file on "image" key)
+router.post('/vision', verifyToken, upload.single('image'), visionController);
 
-// AI Vision - Explain diagrams/images (expects multipart/form-data with "image" file)
-router.post('/vision', upload.single('image'), visionController);
+// AI Chat Logs queries (Authenticated)
+router.get('/chats', verifyToken, getChatSessions);
+router.get('/chats/:id', verifyToken, getChatSessionById);
 
 // AI Quiz Generator
 router.post('/quiz', quizController);

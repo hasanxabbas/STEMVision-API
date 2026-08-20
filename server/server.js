@@ -23,6 +23,7 @@ const lessonRoutes = require("./routes/lesson.routes");
 const quizRoutes = require("./routes/quiz.routes");
 const aiRoutes = require("./routes/ai.routes");
 const notificationRoutes = require("./routes/notification.routes");
+const learningHistoryRoutes = require("./routes/learningHistory.routes");
 
 const errorHandler = require("./middleware/error.middleware");
 
@@ -43,6 +44,7 @@ app.use("/api/lessons", lessonRoutes);
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/learning-history", learningHistoryRoutes);
 
 // 404 Route
 app.use((req, res) => {
