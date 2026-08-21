@@ -85,7 +85,7 @@ Use this lesson context whenever it is relevant to answer the student's question
       ];
 
       const response = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
+        model: 'qwen/qwen3.6-27b',
         messages: messagesArray,
         temperature: 0.5,
         max_tokens: 1500,

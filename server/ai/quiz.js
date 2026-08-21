@@ -47,7 +47,7 @@ Provide your response in JSON format. The JSON must follow this exact structure:
   } else {
     try {
       const response = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
+        model: 'qwen/qwen3.6-27b',
         messages: [
           { role: 'user', content: promptText }
         ],
