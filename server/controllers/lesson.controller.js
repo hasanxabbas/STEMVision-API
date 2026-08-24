@@ -26,6 +26,13 @@ const getAllLessons = async (req, res) => {
       query.branch = req.query.branch;
     }
 
+
+    console.log("LESSON DEBUG:", {
+  user: req.user,
+  query: JSON.stringify(query),
+});
+
+
     const lessons = await Lesson.find(query)
       .populate("subject", "name")
       .populate("teacher", "name");
