@@ -57,7 +57,7 @@ async function tutorController(req, res) {
     }
 
     // Call AI Tutor with full session history
-    const answer = await getTutorResponse(message, context, historyMessages);
+    const answer = (await getTutorResponse(message, context, historyMessages)) || "No response received.";
 
     // Save/Update Conversation in Database
     if (chatSession) {

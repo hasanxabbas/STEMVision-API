@@ -39,7 +39,7 @@ Provide your response in JSON format. The JSON must follow this exact structure:
 
       const result = await model.generateContent(promptText);
       const responseText = result.response.text();
-      return JSON.parse(responseText);
+      return cleanAndParseJSON(responseText);
     } catch (error) {
       console.error('Error in Gemini Quiz Service:', error);
       throw error;
@@ -53,10 +53,11 @@ Provide your response in JSON format. The JSON must follow this exact structure:
         ],
         response_format: { type: 'json_object' },
         temperature: 0.2,
+        reasoning_format: 'hidden',
       });
 
       const contentText = response.choices[0].message.content;
-      return JSON.parse(contentText);
+      return cleanAndParseJSON(contentText);
     } catch (error) {
       console.error('Error in Groq Quiz Service:', error);
       throw error;
@@ -64,6 +65,42 @@ Provide your response in JSON format. The JSON must follow this exact structure:
   }
 }
 
+/**
+ * Strips internal model reasoning (<think>...</think> or <thought>...</thought>) blocks from text.
+ * @param {string} text - The input text.
+ * @returns {string} - The cleaned text.
+ */
+function stripReasoning(text) {
+  if (typeof text !== 'string') return text;
+  
+  // Remove matched <think>...</think> and <thought>...</thought> tags case-insensitively
+  let clean = text.replace(/<(think|thought)>[\s\S]*?<\/\1>/gi, '');
+  
+  // Remove any unclosed tags at the end of the text
+  clean = clean.replace(/<(think|thought)>[\s\S]*$/gi, '');
+  
+  return clean.trim();
+}
+
+/**
+ * Clean up text (removing reasoning and markdown blocks) and parse as JSON.
+ * @param {string} text - The input text.
+ * @returns {Object} - The parsed JSON object.
+ */
+function cleanAndParseJSON(text) {
+  if (typeof text !== 'string') return text;
+  
+  let cleaned = stripReasoning(text);
+  
+  // Strip markdown code blocks if any
+  cleaned = cleaned.replace(/^```json\s*/i, '');
+  cleaned = cleaned.replace(/^```\s*/, '');
+  cleaned = cleaned.replace(/```\s*$/, '');
+  
+  return JSON.parse(cleaned.trim());
+}
+
 module.exports = {
   generateQuiz,
 };
+

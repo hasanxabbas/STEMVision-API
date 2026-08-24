@@ -62,7 +62,7 @@ Use this lesson context whenever it is relevant to answer the student's question
       const chat = model.startChat({ history: formattedHistory });
       const result = await chat.sendMessage(message);
 
-      return result.response.text();
+      return stripReasoning(result.response.text());
     } catch (error) {
       console.error('Error in Gemini Tutor Service:', error);
       throw error;
@@ -89,9 +89,10 @@ Use this lesson context whenever it is relevant to answer the student's question
         messages: messagesArray,
         temperature: 0.5,
         max_tokens: 1500,
+        reasoning_format: 'hidden',
       });
 
-      return response.choices[0].message.content;
+      return stripReasoning(response.choices[0].message.content);
     } catch (error) {
       console.error('Error in Groq Tutor Service:', error);
       throw error;
@@ -99,6 +100,23 @@ Use this lesson context whenever it is relevant to answer the student's question
   }
 }
 
+/**
+ * Strips internal model reasoning (<think>...</think> or <thought>...</thought>) blocks from text.
+ * @param {string} text - The input text.
+ * @returns {string} - The cleaned text.
+ */
+function stripReasoning(text) {
+  if (typeof text !== 'string') return text;
+  
+  // Remove matched <think>...</think> and <thought>...</thought> tags case-insensitively
+  let clean = text.replace(/<(think|thought)>[\s\S]*?<\/\1>/gi, '');
+  
+  // Remove any unclosed tags at the end of the text
+  clean = clean.replace(/<(think|thought)>[\s\S]*$/gi, '');
+  
+  return clean.trim();
+}
+
 module.exports = {
   getTutorResponse,
-};
+};
